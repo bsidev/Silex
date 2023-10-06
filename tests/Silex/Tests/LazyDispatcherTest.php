@@ -29,7 +29,8 @@ class LazyDispatcherTest extends TestCase
             return $dispatcher;
         });
 
-        $app->before(function () {});
+        $app->before(function () {
+        });
 
         $this->assertFalse($dispatcherCreated);
 

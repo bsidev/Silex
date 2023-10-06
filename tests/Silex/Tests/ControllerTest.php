@@ -31,11 +31,9 @@ class ControllerTest extends TestCase
         $this->assertEquals('foo', $controller->getRouteName());
     }
 
-    /**
-     * @expectedException \Silex\Exception\ControllerFrozenException
-     */
     public function testBindOnFrozenControllerShouldThrowException()
     {
+        $this->expectException(\Silex\Exception\ControllerFrozenException::class);
         $controller = new Controller(new Route('/foo'));
         $controller->bind('foo');
         $controller->freeze();
@@ -63,7 +61,9 @@ class ControllerTest extends TestCase
     public function testConvert()
     {
         $controller = new Controller(new Route('/foo/{bar}'));
-        $ret = $controller->convert('bar', $func = function ($bar) { return $bar; });
+        $ret = $controller->convert('bar', $func = function ($bar) {
+            return $bar;
+        });
 
         $this->assertSame($ret, $controller);
         $this->assertEquals(['bar' => $func], $controller->getRoute()->getOption('_converters'));
@@ -72,7 +72,9 @@ class ControllerTest extends TestCase
     public function testRun()
     {
         $controller = new Controller(new Route('/foo/{bar}'));
-        $ret = $controller->run($cb = function () { return 'foo'; });
+        $ret = $controller->run($cb = function () {
+            return 'foo';
+        });
 
         $this->assertSame($ret, $controller);
         $this->assertEquals($cb, $controller->getRoute()->getDefault('_controller'));
@@ -110,11 +112,9 @@ class ControllerTest extends TestCase
         $this->assertEquals('foo', $route->foo);
     }
 
-    /**
-     * @expectedException \BadMethodCallException
-     */
     public function testRouteMethodDoesNotExist()
     {
+        $this->expectException(\BadMethodCallException::class);
         $route = new MyRoute();
 
         $controller = new Controller($route);

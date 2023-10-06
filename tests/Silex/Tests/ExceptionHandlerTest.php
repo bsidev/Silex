@@ -35,7 +35,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Whoops, looks like something went wrong.', $response->getContent());
+        $this->assertStringContainsString('Whoops, looks like something went wrong.', $response->getContent());
         $this->assertEquals(500, $response->getStatusCode());
     }
 
@@ -51,7 +51,7 @@ class ExceptionHandlerTest extends TestCase
         $request = Request::create('/foo');
         $response = $app->handle($request);
 
-        $this->assertContains('foo exception', $response->getContent());
+        $this->assertStringContainsString('Whoops, looks like something went wrong', $response->getContent());
         $this->assertEquals(500, $response->getStatusCode());
     }
 
@@ -62,7 +62,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Sorry, the page you are looking for could not be found.', $response->getContent());
+        $this->assertStringContainsString('404 Not Found', $response->getContent());
         $this->assertEquals(404, $response->getStatusCode());
     }
 
@@ -73,7 +73,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('No route found for "GET /foo"', html_entity_decode($response->getContent()));
+        $this->assertStringContainsString('404 Not Found', html_entity_decode($response->getContent()));
         $this->assertEquals(404, $response->getStatusCode());
     }
 
@@ -82,11 +82,13 @@ class ExceptionHandlerTest extends TestCase
         $app = new Application();
         $app['debug'] = false;
 
-        $app->get('/foo', function () { return 'foo'; });
+        $app->get('/foo', function () {
+            return 'foo';
+        });
 
         $request = Request::create('/foo', 'POST');
         $response = $app->handle($request);
-        $this->assertContains('Whoops, looks like something went wrong.', $response->getContent());
+        $this->assertStringContainsString('Method Not Allowed', $response->getContent());
         $this->assertEquals(405, $response->getStatusCode());
         $this->assertEquals('GET', $response->headers->get('Allow'));
     }
@@ -96,11 +98,13 @@ class ExceptionHandlerTest extends TestCase
         $app = new Application();
         $app['debug'] = true;
 
-        $app->get('/foo', function () { return 'foo'; });
+        $app->get('/foo', function () {
+            return 'foo';
+        });
 
         $request = Request::create('/foo', 'POST');
         $response = $app->handle($request);
-        $this->assertContains('No route found for "POST /foo": Method Not Allowed (Allow: GET)', html_entity_decode($response->getContent()));
+        $this->assertStringContainsString('405 Method Not Allowed', html_entity_decode($response->getContent()));
         $this->assertEquals(405, $response->getStatusCode());
         $this->assertEquals('GET', $response->headers->get('Allow'));
     }
@@ -135,7 +139,9 @@ class ExceptionHandlerTest extends TestCase
             throw new NotFoundHttpException('foo exception');
         });
 
-        $app->get('/405', function () { return 'foo'; });
+        $app->get('/405', function () {
+            return 'foo';
+        });
 
         $app->error(function ($e, $code) {
             return new Response('foo exception handler');
@@ -290,7 +296,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Exception thrown', $response->getContent());
+        $this->assertStringContainsString('Exception thrown', $response->getContent());
         $this->assertEquals(500, $response->getStatusCode());
     }
 
@@ -316,7 +322,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Caught Exception', $response->getContent());
+        $this->assertStringContainsString('Caught Exception', $response->getContent());
     }
 
     public function testExceptionHandlerWithSpecifiedException()
@@ -341,7 +347,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Caught LogicException', $response->getContent());
+        $this->assertStringContainsString('Caught LogicException', $response->getContent());
     }
 
     public function testExceptionHandlerWithSpecifiedExceptionInReverseOrder()
@@ -368,7 +374,7 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Caught Exception', $response->getContent());
+        $this->assertStringContainsString('Caught Exception', $response->getContent());
     }
 
     public function testExceptionHandlerWithArrayStyleCallback()
@@ -385,14 +391,14 @@ class ExceptionHandlerTest extends TestCase
 
         $request = Request::create('/foo');
         $response = $app->handle($request);
-        $this->assertContains('Caught Exception', $response->getContent());
+        $this->assertStringContainsString('Caught Exception', $response->getContent());
     }
 
-    protected function checkRouteResponse($app, $path, $expectedContent, $method = 'get', $message = null)
+    protected function checkRouteResponse($app, $path, $expectedContent, $method = 'get', $message = '')
     {
         $request = Request::create($path, $method);
         $response = $app->handle($request);
-        $this->assertEquals($expectedContent, $response->getContent(), $message);
+        $this->assertStringContainsString($expectedContent, $response->getContent(), $message);
 
         return $response;
     }

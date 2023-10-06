@@ -11,19 +11,18 @@
 
 namespace Silex\Tests;
 
-use Fig\Link\GenericLinkProvider;
-use Fig\Link\Link;
 use PHPUnit\Framework\TestCase;
+use Silex\Api\ControllerProviderInterface;
 use Silex\Application;
 use Silex\ControllerCollection;
-use Silex\Api\ControllerProviderInterface;
 use Silex\Route;
+use stdClass;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -37,22 +36,28 @@ class ApplicationTest extends TestCase
     {
         $app = new Application();
 
-        $returnValue = $app->match('/foo', function () {});
+        $returnValue = $app->match('/foo', function () {
+        });
         $this->assertInstanceOf('Silex\Controller', $returnValue);
 
-        $returnValue = $app->get('/foo', function () {});
+        $returnValue = $app->get('/foo', function () {
+        });
         $this->assertInstanceOf('Silex\Controller', $returnValue);
 
-        $returnValue = $app->post('/foo', function () {});
+        $returnValue = $app->post('/foo', function () {
+        });
         $this->assertInstanceOf('Silex\Controller', $returnValue);
 
-        $returnValue = $app->put('/foo', function () {});
+        $returnValue = $app->put('/foo', function () {
+        });
         $this->assertInstanceOf('Silex\Controller', $returnValue);
 
-        $returnValue = $app->patch('/foo', function () {});
+        $returnValue = $app->patch('/foo', function () {
+        });
         $this->assertInstanceOf('Silex\Controller', $returnValue);
 
-        $returnValue = $app->delete('/foo', function () {});
+        $returnValue = $app->delete('/foo', function () {
+        });
         $this->assertInstanceOf('Silex\Controller', $returnValue);
     }
 
@@ -115,14 +120,18 @@ class ApplicationTest extends TestCase
 
         $app->get('/foo/{foo}', function (\ArrayObject $foo) {
             return $foo['foo'];
-        })->convert('foo', function ($foo) { return new \ArrayObject(['foo' => $foo]); });
+        })->convert('foo', function ($foo) {
+            return new \ArrayObject(['foo' => $foo]);
+        });
 
         $response = $app->handle(Request::create('/foo/bar'));
         $this->assertEquals('bar', $response->getContent());
 
         $app->get('/foo/{foo}/{bar}', function (\ArrayObject $foo) {
             return $foo['foo'];
-        })->convert('foo', function ($foo, Request $request) { return new \ArrayObject(['foo' => $foo.$request->attributes->get('bar')]); });
+        })->convert('foo', function ($foo, Request $request) {
+            return new \ArrayObject(['foo' => $foo . $request->attributes->get('bar')]);
+        });
 
         $response = $app->handle(Request::create('/foo/foo/bar'));
         $this->assertEquals('foobar', $response->getContent());
@@ -133,11 +142,13 @@ class ApplicationTest extends TestCase
         $app = new Application();
         $app['pass'] = false;
 
-        $app->on('test', function (Event $e) use ($app) {
+        $event = new stdClass();
+
+        $app->on('test', function (stdClass $e) use ($app) {
             $app['pass'] = true;
         });
 
-        $app['dispatcher']->dispatch('test');
+        $app['dispatcher']->dispatch($event, 'test');
 
         $this->assertTrue($app['pass']);
     }
@@ -263,16 +274,16 @@ class ApplicationTest extends TestCase
 
             return 'hello';
         })
-        ->before($beforeMiddleware1)
-        ->before($beforeMiddleware2)
-        ->after($afterMiddleware1)
-        ->after($afterMiddleware2);
+            ->before($beforeMiddleware1)
+            ->before($beforeMiddleware2)
+            ->after($afterMiddleware1)
+            ->after($afterMiddleware2);
 
         $app->get('/never-reached', function () use (&$middlewareTarget) {
             throw new \Exception('This route shouldn\'t run!');
         })
-        ->before($beforeMiddleware3)
-        ->after($afterMiddleware3);
+            ->before($beforeMiddleware3)
+            ->after($afterMiddleware3);
 
         $result = $app->handle(Request::create('/reached'));
 
@@ -287,9 +298,9 @@ class ApplicationTest extends TestCase
         $app->get('/foo', function () {
             throw new \Exception('This route shouldn\'t run!');
         })
-        ->before(function () {
-            return new Response('foo');
-        });
+            ->before(function () {
+                return new Response('foo');
+            });
 
         $request = Request::create('/foo');
         $result = $app->handle($request);
@@ -304,9 +315,9 @@ class ApplicationTest extends TestCase
         $app->get('/foo', function () {
             return new Response('foo');
         })
-        ->after(function () {
-            return new Response('bar');
-        });
+            ->after(function () {
+                return new Response('bar');
+            });
 
         $request = Request::create('/foo');
         $result = $app->handle($request);
@@ -321,9 +332,9 @@ class ApplicationTest extends TestCase
         $app->get('/foo', function () {
             throw new \Exception('This route shouldn\'t run!');
         })
-        ->before(function () use ($app) {
-            return $app->redirect('/bar');
-        });
+            ->before(function () use ($app) {
+                return $app->redirect('/bar');
+            });
 
         $request = Request::create('/foo');
         $result = $app->handle($request);
@@ -344,7 +355,7 @@ class ApplicationTest extends TestCase
         $app->get('/foo', function () use (&$middlewareTarget) {
             $middlewareTarget[] = 'route_triggered';
         })
-        ->before($middleware);
+            ->before($middleware);
 
         $app->before(function () use (&$middlewareTarget) {
             $middlewareTarget[] = 'before_triggered';
@@ -367,7 +378,7 @@ class ApplicationTest extends TestCase
         $app->get('/foo', function () use (&$middlewareTarget) {
             $middlewareTarget[] = 'route_triggered';
         })
-        ->after($middleware);
+            ->after($middleware);
 
         $app->after(function () use (&$middlewareTarget) {
             $middlewareTarget[] = 'after_triggered';
@@ -405,11 +416,9 @@ class ApplicationTest extends TestCase
         $this->assertSame(['1_routeTriggered', '2_filterAfter', '3_responseSent', '4_filterFinish'], $containerTarget);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testNonResponseAndNonNullReturnFromRouteBeforeMiddlewareShouldThrowRuntimeException()
     {
+        $this->expectException(\RuntimeException::class);
         $app = new Application();
 
         $middleware = function (Request $request) {
@@ -419,16 +428,14 @@ class ApplicationTest extends TestCase
         $app->get('/', function () {
             return 'hello';
         })
-        ->before($middleware);
+            ->before($middleware);
 
         $app->handle(Request::create('/'), HttpKernelInterface::MASTER_REQUEST, false);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testNonResponseAndNonNullReturnFromRouteAfterMiddlewareShouldThrowRuntimeException()
     {
+        $this->expectException(\RuntimeException::class);
         $app = new Application();
 
         $middleware = function (Request $request) {
@@ -438,7 +445,7 @@ class ApplicationTest extends TestCase
         $app->get('/', function () {
             return 'hello';
         })
-        ->after($middleware);
+            ->after($middleware);
 
         $app->handle(Request::create('/'), HttpKernelInterface::MASTER_REQUEST, false);
     }
@@ -468,7 +475,9 @@ class ApplicationTest extends TestCase
     {
         $app = new Application();
         $mounted = new ControllerCollection(new Route());
-        $mounted->get('/{name}', function ($name) { return new Response($name); });
+        $mounted->get('/{name}', function ($name) {
+            return new Response($name);
+        });
 
         $this->assertSame($app, $app->mount('/hello', $mounted));
     }
@@ -487,22 +496,18 @@ class ApplicationTest extends TestCase
         $this->assertEquals(['first', 'second', 'third'], array_keys(iterator_to_array($app['routes'])));
     }
 
-    /**
-     * @expectedException        \LogicException
-     * @expectedExceptionMessage The "mount" method takes either a "ControllerCollection" instance, "ControllerProviderInterface" instance, or a callable.
-     */
     public function testMountNullException()
     {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage("The \"mount\" method takes either a \"ControllerCollection\" instance, \"ControllerProviderInterface\" instance, or a callable.");
         $app = new Application();
         $app->mount('/exception', null);
     }
 
-    /**
-     * @expectedException        \LogicException
-     * @expectedExceptionMessage The method "Silex\Tests\IncorrectControllerCollection::connect" must return a "ControllerCollection" instance. Got: "NULL"
-     */
     public function testMountWrongConnectReturnValueException()
     {
+        $this->expectExceptionMessage("The method \"Silex\Tests\IncorrectControllerCollection::connect\" must return a \"ControllerCollection\" instance. Got: \"NULL\"");
+        $this->expectException(\LogicException::class);
         $app = new Application();
         $app->mount('/exception', new IncorrectControllerCollection());
     }
@@ -528,12 +533,10 @@ class ApplicationTest extends TestCase
         $this->assertEquals(__FILE__, (string) $response->getFile());
     }
 
-    /**
-     * @expectedException        \LogicException
-     * @expectedExceptionMessage The "homepage" route must have code to run when it matches.
-     */
     public function testGetRouteCollectionWithRouteWithoutController()
     {
+        $this->expectExceptionMessage("The \"homepage\" route must have code to run when it matches.");
+        $this->expectException(\LogicException::class);
         $app = new Application();
         unset($app['exception_handler']);
         $app->match('/')->bind('homepage');
@@ -543,9 +546,13 @@ class ApplicationTest extends TestCase
     public function testBeforeFilterOnMountedControllerGroupIsolatedToGroup()
     {
         $app = new Application();
-        $app->match('/', function () { return new Response('ok'); });
+        $app->match('/', function () {
+            return new Response('ok');
+        });
         $mounted = $app['controllers_factory'];
-        $mounted->before(function () { return new Response('not ok'); });
+        $mounted->before(function () {
+            return new Response('not ok');
+        });
         $app->mount('/group', $mounted);
 
         $response = $app->handle(Request::create('/'));
@@ -555,7 +562,9 @@ class ApplicationTest extends TestCase
     public function testViewListenerWithPrimitive()
     {
         $app = new Application();
-        $app->get('/foo', function () { return 123; });
+        $app->get('/foo', function () {
+            return 123;
+        });
         $app->view(function ($view, Request $request) {
             return new Response($view);
         });
@@ -568,7 +577,9 @@ class ApplicationTest extends TestCase
     public function testViewListenerWithArrayTypeHint()
     {
         $app = new Application();
-        $app->get('/foo', function () { return ['ok']; });
+        $app->get('/foo', function () {
+            return ['ok'];
+        });
         $app->view(function (array $view) {
             return new Response($view[0]);
         });
@@ -581,9 +592,11 @@ class ApplicationTest extends TestCase
     public function testViewListenerWithObjectTypeHint()
     {
         $app = new Application();
-        $app->get('/foo', function () { return (object) ['name' => 'world']; });
+        $app->get('/foo', function () {
+            return (object) ['name' => 'world'];
+        });
         $app->view(function (\stdClass $view) {
-            return new Response('Hello '.$view->name);
+            return new Response('Hello ' . $view->name);
         });
 
         $response = $app->handle(Request::create('/foo'));
@@ -594,9 +607,13 @@ class ApplicationTest extends TestCase
     public function testViewListenerWithCallableTypeHint()
     {
         $app = new Application();
-        $app->get('/foo', function () { return function () { return 'world'; }; });
+        $app->get('/foo', function () {
+            return function () {
+                return 'world';
+            };
+        });
         $app->view(function (callable $view) {
-            return new Response('Hello '.$view());
+            return new Response('Hello ' . $view());
         });
 
         $response = $app->handle(Request::create('/foo'));
@@ -607,10 +624,12 @@ class ApplicationTest extends TestCase
     public function testViewListenersCanBeChained()
     {
         $app = new Application();
-        $app->get('/foo', function () { return (object) ['name' => 'world']; });
+        $app->get('/foo', function () {
+            return (object) ['name' => 'world'];
+        });
 
         $app->view(function (\stdClass $view) {
-            return ['msg' => 'Hello '.$view->name];
+            return ['msg' => 'Hello ' . $view->name];
         });
 
         $app->view(function (array $view) {
@@ -625,7 +644,9 @@ class ApplicationTest extends TestCase
     public function testViewListenersAreIgnoredIfNotSuitable()
     {
         $app = new Application();
-        $app->get('/foo', function () { return 'Hello world'; });
+        $app->get('/foo', function () {
+            return 'Hello world';
+        });
 
         $app->view(function (\stdClass $view) {
             throw new \Exception('View listener was called');
@@ -643,7 +664,9 @@ class ApplicationTest extends TestCase
     public function testViewListenersResponsesAreNotUsedIfNull()
     {
         $app = new Application();
-        $app->get('/foo', function () { return 'Hello world'; });
+        $app->get('/foo', function () {
+            return 'Hello world';
+        });
 
         $app->view(function ($view) {
             return 'Hello view listener';
@@ -656,22 +679,6 @@ class ApplicationTest extends TestCase
         $response = $app->handle(Request::create('/foo'));
 
         $this->assertEquals('Hello view listener', $response->getContent());
-    }
-
-    public function testWebLinkListener()
-    {
-        $app = new Application();
-
-        $app->get('/', function () {
-            return 'hello';
-        });
-
-        $request = Request::create('/');
-        $request->attributes->set('_links', (new GenericLinkProvider())->withLink(new Link('preload', '/foo.css')));
-
-        $response = $app->handle($request);
-
-        $this->assertEquals('</foo.css>; rel="preload"', $response->headers->get('Link'));
     }
 
     public function testDefaultRoutesFactory()
@@ -694,12 +701,12 @@ class FooController
 {
     public function barAction(Application $app, $name)
     {
-        return 'Hello '.$app->escape($name);
+        return 'Hello ' . $app->escape($name);
     }
 
     public function barSpecialAction(SpecialApplication $app, $name)
     {
-        return 'Hello '.$app->escape($name).' in '.get_class($app);
+        return 'Hello ' . $app->escape($name) . ' in ' . get_class($app);
     }
 }
 

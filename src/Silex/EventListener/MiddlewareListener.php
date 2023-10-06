@@ -11,12 +11,12 @@
 
 namespace Silex\EventListener;
 
-use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Silex\Application;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Manages the route middlewares.
@@ -40,13 +40,13 @@ class MiddlewareListener implements EventSubscriberInterface
     /**
      * Runs before filters.
      *
-     * @param GetResponseEvent $event The event to handle
+     * @param RequestEvent $event The event to handle
      */
-    public function onKernelRequest(GetResponseEvent $event)
+    public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
         $routeName = $request->attributes->get('_route');
-        if (!$route = $this->app['routes']->get($routeName)) {
+        if (!$routeName || !($route = $this->app['routes']->get($routeName))) {
             return;
         }
 
@@ -65,13 +65,13 @@ class MiddlewareListener implements EventSubscriberInterface
     /**
      * Runs after filters.
      *
-     * @param FilterResponseEvent $event The event to handle
+     * @param ResponseEvent $event The event to handle
      */
-    public function onKernelResponse(FilterResponseEvent $event)
+    public function onKernelResponse(ResponseEvent $event)
     {
         $request = $event->getRequest();
         $routeName = $request->attributes->get('_route');
-        if (!$route = $this->app['routes']->get($routeName)) {
+        if (!$routeName || !($route = $this->app['routes']->get($routeName))) {
             return;
         }
 
@@ -85,7 +85,7 @@ class MiddlewareListener implements EventSubscriberInterface
         }
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             // this must be executed after the late events defined with before() (and their priority is -512)

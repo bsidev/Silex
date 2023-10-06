@@ -167,7 +167,9 @@ class MiddlewareTest extends TestCase
     {
         $app = new Application();
 
-        $app->before(function () { return new Response('app before'); });
+        $app->before(function () {
+            return new Response('app before');
+        });
 
         $app->get('/', function () {
             return new Response('test');
@@ -182,7 +184,9 @@ class MiddlewareTest extends TestCase
     {
         $app = new Application();
 
-        $app->before(function () { throw new \RuntimeException(''); });
+        $app->before(function () {
+            throw new \RuntimeException('');
+        });
 
         // even if the before filter throws an exception, we must have the 404
         $this->assertEquals(404, $app->handle(Request::create('/'))->getStatusCode());
@@ -215,7 +219,9 @@ class MiddlewareTest extends TestCase
             return new Response($request->get('name'));
         });
 
-        $app->match('/', function () use ($app) { throw new \Exception('Should never be executed'); });
+        $app->match('/', function () use ($app) {
+            throw new \Exception('Should never be executed');
+        });
 
         $request = Request::create('/?name=Fabien');
         $this->assertEquals('Fabien', $app->handle($request)->getContent());
@@ -226,10 +232,12 @@ class MiddlewareTest extends TestCase
         $app = new Application();
 
         $app->after(function (Request $request, Response $response) {
-            $response->setContent($response->getContent().'---');
+            $response->setContent($response->getContent() . '---');
         });
 
-        $app->match('/', function () { return new Response('foo'); });
+        $app->match('/', function () {
+            return new Response('foo');
+        });
 
         $request = Request::create('/');
         $this->assertEquals('foo---', $app->handle($request)->getContent());
@@ -243,7 +251,9 @@ class MiddlewareTest extends TestCase
             return new Response('bar');
         });
 
-        $app->match('/', function () { return new Response('foo'); });
+        $app->match('/', function () {
+            return new Response('foo');
+        });
 
         $request = Request::create('/');
         $this->assertEquals('bar', $app->handle($request)->getContent());
@@ -296,8 +306,8 @@ class MiddlewareTest extends TestCase
         $app->match('/', function () {
             return new Response('foo');
         })
-        ->before($routeBeforeMiddleware)
-        ->after($routeAfterMiddleware);
+            ->before($routeBeforeMiddleware)
+            ->after($routeAfterMiddleware);
 
         $request = Request::create('/');
         $response = $app->handle($request);

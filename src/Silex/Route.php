@@ -27,13 +27,13 @@ class Route extends BaseRoute
      *
      *  * compiler_class: A class name able to compile this route instance (RouteCompiler by default)
      *
-     * @param string       $path         The path pattern to match
-     * @param array        $defaults     An array of default parameter values
-     * @param array        $requirements An array of requirements for parameters (regexes)
-     * @param array        $options      An array of options
-     * @param string       $host         The host pattern to match
-     * @param string|array $schemes      A required URI scheme or an array of restricted schemes
-     * @param string|array $methods      A required HTTP method or an array of restricted methods
+     * @param string $path The path pattern to match
+     * @param array $defaults An array of default parameter values
+     * @param array $requirements An array of requirements for parameters (regexes)
+     * @param array $options An array of options
+     * @param string $host The host pattern to match
+     * @param string|array $schemes A required URI scheme or an array of restricted schemes
+     * @param string|array $methods A required HTTP method or an array of restricted methods
      */
     public function __construct($path = '/', array $defaults = [], array $requirements = [], array $options = [], $host = '', $schemes = [], $methods = [])
     {
@@ -59,7 +59,7 @@ class Route extends BaseRoute
      * Sets the requirement for a route variable.
      *
      * @param string $variable The variable name
-     * @param string $regexp   The regexp to apply
+     * @param string $regexp The regexp to apply
      *
      * @return Route $this The current route instance
      */
@@ -74,7 +74,7 @@ class Route extends BaseRoute
      * Sets the default value for a route variable.
      *
      * @param string $variable The variable name
-     * @param mixed  $default  The default value
+     * @param mixed $default The default value
      *
      * @return Route $this The current Route instance
      */
@@ -89,7 +89,7 @@ class Route extends BaseRoute
      * Sets a converter for a route variable.
      *
      * @param string $variable The variable name
-     * @param mixed  $callback A PHP callback that converts the original value
+     * @param mixed $callback A PHP callback that converts the original value
      *
      * @return Route $this The current Route instance
      */

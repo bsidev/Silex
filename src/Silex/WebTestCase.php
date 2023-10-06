@@ -12,7 +12,7 @@
 namespace Silex;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpKernel\Client;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
@@ -35,7 +35,7 @@ abstract class WebTestCase extends TestCase
      * Note: Child classes that define a setUp method must call
      * parent::setUp().
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->app = $this->createApplication();
     }
@@ -50,16 +50,14 @@ abstract class WebTestCase extends TestCase
     /**
      * Creates a Client.
      *
-     * @param array $server Server parameters
-     *
-     * @return Client A Client instance
+     * @return HttpBrowser A Client instance
      */
-    public function createClient(array $server = [])
+    public function createClient()
     {
-        if (!class_exists('Symfony\Component\BrowserKit\Client')) {
-            throw new \LogicException('Component "symfony/browser-kit" is required by WebTestCase.'.PHP_EOL.'Run composer require symfony/browser-kit');
+        if (!class_exists('Symfony\Component\BrowserKit\HttpBrowser')) {
+            throw new \LogicException('Component "symfony/browser-kit" is required by WebTestCase.' . PHP_EOL . 'Run composer require symfony/browser-kit');
         }
 
-        return new Client($this->app, $server);
+        return new HttpBrowser();
     }
 }

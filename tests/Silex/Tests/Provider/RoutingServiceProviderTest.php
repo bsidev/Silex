@@ -29,10 +29,12 @@ class RoutingServiceProviderTest extends TestCase
     {
         $app = new Application();
 
-        $app->get('/hello/{name}', function ($name) {})
+        $app->get('/hello/{name}', function ($name) {
+        })
             ->bind('hello');
 
-        $app->get('/', function () {});
+        $app->get('/', function () {
+        });
 
         $request = Request::create('/');
         $app->handle($request);
@@ -44,7 +46,8 @@ class RoutingServiceProviderTest extends TestCase
     {
         $app = new Application();
 
-        $app->get('/hello/{name}', function ($name) {})
+        $app->get('/hello/{name}', function ($name) {
+        })
             ->bind('hello');
 
         $app->get('/', function () use ($app) {
@@ -61,7 +64,8 @@ class RoutingServiceProviderTest extends TestCase
     {
         $app = new Application();
 
-        $app->get('/hello/{name}', function ($name) {})
+        $app->get('/hello/{name}', function ($name) {
+        })
             ->bind('hello');
 
         $app->get('/', function () use ($app) {
@@ -78,7 +82,8 @@ class RoutingServiceProviderTest extends TestCase
     {
         $app = new Application();
 
-        $app->get('/insecure', function () {})
+        $app->get('/insecure', function () {
+        })
             ->bind('insecure_page')
             ->requireHttp();
 
@@ -96,7 +101,8 @@ class RoutingServiceProviderTest extends TestCase
     {
         $app = new Application();
 
-        $app->get('/secure', function () {})
+        $app->get('/secure', function () {
+        })
             ->bind('secure_page')
             ->requireHttps();
 

@@ -28,7 +28,7 @@ class ServiceControllerResolver implements ControllerResolverInterface
      * Constructor.
      *
      * @param ControllerResolverInterface $controllerResolver A ControllerResolverInterface instance to delegate to
-     * @param CallbackResolver            $callbackResolver   A service resolver instance
+     * @param CallbackResolver $callbackResolver A service resolver instance
      */
     public function __construct(ControllerResolverInterface $controllerResolver, CallbackResolver $callbackResolver)
     {
@@ -39,7 +39,7 @@ class ServiceControllerResolver implements ControllerResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function getController(Request $request)
+    public function getController(Request $request): callable|false
     {
         $controller = $request->attributes->get('_controller', null);
 

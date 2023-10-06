@@ -12,8 +12,8 @@
 namespace Silex\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Silex\ServiceControllerResolver;
 use Silex\Application;
+use Silex\ServiceControllerResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -27,7 +27,7 @@ class ServiceControllerResolverTest extends Testcase
     private $mockResolver;
     private $resolver;
 
-    public function setup()
+    public function setup(): void
     {
         $this->mockResolver = $this->getMockBuilder('Symfony\Component\HttpKernel\Controller\ControllerResolverInterface')
             ->disableOriginalConstructor()
@@ -49,14 +49,17 @@ class ServiceControllerResolverTest extends Testcase
         $this->mockCallbackResolver->expects($this->once())
             ->method('convertCallback')
             ->with('some_service:methodName')
-            ->will($this->returnValue(['callback']));
+            ->will($this->returnValue(static function () {
+            }));
 
-        $this->app['some_service'] = function () { return new \stdClass(); };
+        $this->app['some_service'] = function () {
+            return new \stdClass();
+        };
 
         $req = Request::create('/');
         $req->attributes->set('_controller', 'some_service:methodName');
 
-        $this->assertEquals(['callback'], $this->resolver->getController($req));
+        $this->assertIsCallable($this->resolver->getController($req));
     }
 
     public function testShouldUnresolvedControllerNames()
@@ -72,8 +75,8 @@ class ServiceControllerResolverTest extends Testcase
         $this->mockResolver->expects($this->once())
             ->method('getController')
             ->with($req)
-            ->will($this->returnValue(123));
+            ->will($this->returnValue(false));
 
-        $this->assertEquals(123, $this->resolver->getController($req));
+        $this->assertEquals(false, $this->resolver->getController($req));
     }
 }

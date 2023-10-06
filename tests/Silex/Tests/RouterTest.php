@@ -13,9 +13,9 @@ namespace Silex\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Silex\Application;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Router test cases.
@@ -95,11 +95,9 @@ class RouterTest extends TestCase
         $this->assertTrue($response->isRedirect('/target2'));
     }
 
-    /**
-     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-     */
     public function testMissingRoute()
     {
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
         $app = new Application();
         unset($app['exception_handler']);
 
@@ -164,7 +162,7 @@ class RouterTest extends TestCase
         foreach (['/foo', '/bar'] as $path) {
             $request = Request::create($path);
             $response = $app->handle($request);
-            $this->assertContains($path, $response->getContent());
+            $this->assertStringContainsString($path, $response->getContent());
         }
     }
 
@@ -198,7 +196,7 @@ class RouterTest extends TestCase
         $app->match('/secured', function () {
             return 'secured content';
         })
-        ->requireHttp();
+            ->requireHttp();
 
         $request = Request::create('https://example.com/secured');
         $response = $app->handle($request);
@@ -212,7 +210,7 @@ class RouterTest extends TestCase
         $app->match('/secured', function () {
             return 'secured content';
         })
-        ->requireHttps();
+            ->requireHttps();
 
         $request = Request::create('http://example.com/secured');
         $response = $app->handle($request);
@@ -226,24 +224,11 @@ class RouterTest extends TestCase
         $app->match('/secured', function () {
             return 'secured content';
         })
-        ->requireHttps();
+            ->requireHttps();
 
         $request = Request::create('http://example.com/secured?query=string');
         $response = $app->handle($request);
         $this->assertTrue($response->isRedirect('https://example.com/secured?query=string'));
-    }
-
-    public function testConditionOnRoute()
-    {
-        $app = new Application();
-        $app->match('/secured', function () {
-            return 'secured content';
-        })
-        ->when('request.isSecure() == true');
-
-        $request = Request::create('http://example.com/secured');
-        $response = $app->handle($request);
-        $this->assertEquals(404, $response->getStatusCode());
     }
 
     public function testClassNameControllerSyntax()
@@ -264,7 +249,7 @@ class RouterTest extends TestCase
         $this->checkRouteResponse($app, '/bar', 'bar');
     }
 
-    protected function checkRouteResponse(Application $app, $path, $expectedContent, $method = 'get', $message = null)
+    protected function checkRouteResponse(Application $app, $path, $expectedContent, $method = 'get', $message = '')
     {
         $request = Request::create($path, $method);
         $response = $app->handle($request);

@@ -11,8 +11,8 @@
 
 namespace Silex;
 
-use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Builds Silex controllers.
@@ -59,7 +59,7 @@ class ControllerCollection
     /**
      * Mounts controllers under the given route prefix.
      *
-     * @param string                        $prefix      The route prefix
+     * @param string $prefix The route prefix
      * @param ControllerCollection|callable $controllers A ControllerCollection instance or a callable for defining routes
      *
      * @throws \LogicException
@@ -86,7 +86,7 @@ class ControllerCollection
      * You can optionally specify HTTP methods that should be matched.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -104,7 +104,7 @@ class ControllerCollection
      * Maps a GET request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -117,7 +117,7 @@ class ControllerCollection
      * Maps a POST request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -130,7 +130,7 @@ class ControllerCollection
      * Maps a PUT request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -143,7 +143,7 @@ class ControllerCollection
      * Maps a DELETE request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -156,7 +156,7 @@ class ControllerCollection
      * Maps an OPTIONS request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -169,7 +169,7 @@ class ControllerCollection
      * Maps a PATCH request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -212,24 +212,24 @@ class ControllerCollection
     private function doFlush($prefix, RouteCollection $routes)
     {
         if ('' !== $prefix) {
-            $prefix = '/'.trim(trim($prefix), '/');
+            $prefix = '/' . trim(trim($prefix), '/');
         }
 
         foreach ($this->controllers as $controller) {
             if ($controller instanceof Controller) {
-                $controller->getRoute()->setPath($prefix.$controller->getRoute()->getPath());
+                $controller->getRoute()->setPath($prefix . $controller->getRoute()->getPath());
                 if (!$name = $controller->getRouteName()) {
                     $name = $base = $controller->generateRouteName('');
                     $i = 0;
                     while ($routes->get($name)) {
-                        $name = $base.'_'.++$i;
+                        $name = $base . '_' . ++$i;
                     }
                     $controller->bind($name);
                 }
                 $routes->add($name, $controller->getRoute());
                 $controller->freeze();
             } else {
-                $controller->doFlush($prefix.$controller->prefix, $routes);
+                $controller->doFlush($prefix . $controller->prefix, $routes);
             }
         }
 

@@ -13,13 +13,10 @@ namespace Silex\Tests\Provider;
 
 use PHPUnit\Framework\TestCase;
 use Silex\Application;
-use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\ValidatorServiceProvider;
-use Silex\Provider\FormServiceProvider;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
-use Symfony\Component\Validator\Constraints as Assert;
 use Silex\Tests\Provider\ValidatorServiceProviderTest\Constraint\Custom;
 use Silex\Tests\Provider\ValidatorServiceProviderTest\Constraint\CustomValidator;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -33,7 +30,6 @@ class ValidatorServiceProviderTest extends TestCase
     {
         $app = new Application();
         $app->register(new ValidatorServiceProvider());
-        $app->register(new FormServiceProvider());
 
         return $app;
     }
@@ -85,7 +81,7 @@ class ValidatorServiceProviderTest extends TestCase
     }
 
     /**
-     * @depends testRegister
+     * @depends      testRegister
      * @dataProvider getTestValidatorConstraintProvider
      */
     public function testValidatorConstraint($email, $isValid, $nbGlobalError, $nbEmailError, $app)
@@ -103,36 +99,13 @@ class ValidatorServiceProviderTest extends TestCase
 
         $form = $builder
             ->add('email', 'Symfony\Component\Form\Extension\Core\Type\EmailType', ['label' => 'Email'])
-            ->getForm()
-        ;
+            ->getForm();
 
         $form->submit(['email' => $email]);
 
         $this->assertEquals($isValid, $form->isValid());
         $this->assertCount($nbGlobalError, $form->getErrors());
         $this->assertCount($nbEmailError, $form->offsetGet('email')->getErrors());
-    }
-
-    public function testValidatorWillNotAddNonexistentTranslationFiles()
-    {
-        $app = new Application([
-            'locale' => 'nonexistent',
-        ]);
-
-        $app->register(new ValidatorServiceProvider());
-        $app->register(new TranslationServiceProvider(), [
-            'locale_fallbacks' => [],
-        ]);
-
-        $app['validator'];
-        $translator = $app['translator'];
-
-        try {
-            $translator->trans('test');
-            $this->addToAssertionCount(1);
-        } catch (NotFoundResourceException $e) {
-            $this->fail('Validator should not add a translation resource that does not exist');
-        }
     }
 
     public function getTestValidatorConstraintProvider()
@@ -145,62 +118,8 @@ class ValidatorServiceProviderTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getAddResourceData
-     */
-    public function testAddResource($registerValidatorFirst)
-    {
-        $app = new Application();
-        $app['locale'] = 'fr';
-
-        $app->register(new ValidatorServiceProvider());
-        $app->register(new TranslationServiceProvider());
-        $app->extend('translator', function ($translator, $app) {
-            $translator->addResource('array', ['This value should not be blank.' => 'Pas vide'], 'fr', 'validators');
-
-            return $translator;
-        });
-
-        if ($registerValidatorFirst) {
-            $app['validator'];
-        }
-
-        $this->assertEquals('Pas vide', $app['translator']->trans('This value should not be blank.', [], 'validators', 'fr'));
-    }
-
     public function getAddResourceData()
     {
         return [[false], [true]];
-    }
-
-    public function testAddResourceAlternate()
-    {
-        $app = new Application();
-        $app['locale'] = 'fr';
-
-        $app->register(new ValidatorServiceProvider());
-        $app->register(new TranslationServiceProvider());
-        $app->factory($app->extend('translator.resources', function ($resources, $app) {
-            $resources = array_merge($resources, [
-                ['array', ['This value should not be blank.' => 'Pas vide'], 'fr', 'validators'],
-            ]);
-
-            return $resources;
-        }));
-
-        $app['validator'];
-
-        $this->assertEquals('Pas vide', $app['translator']->trans('This value should not be blank.', [], 'validators', 'fr'));
-    }
-
-    public function testTranslatorResourcesIsArray()
-    {
-        $app = new Application();
-        $app['locale'] = 'fr';
-
-        $app->register(new ValidatorServiceProvider());
-        $app->register(new TranslationServiceProvider());
-
-        $this->assertInternalType('array', $app['translator.resources']);
     }
 }

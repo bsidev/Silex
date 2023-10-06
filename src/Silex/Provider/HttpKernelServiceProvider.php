@@ -12,14 +12,12 @@ use Silex\EventListener\MiddlewareListener;
 use Silex\EventListener\StringToResponseListener;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory;
 use Symfony\Component\HttpKernel\EventListener\ResponseListener;
 use Symfony\Component\HttpKernel\HttpKernel;
-use Symfony\Component\WebLink\EventListener\AddLinkHeaderListener;
-use Symfony\Component\WebLink\HttpHeaderSerializer;
 
 class HttpKernelServiceProvider implements ServiceProviderInterface, EventListenerProviderInterface
 {
@@ -69,9 +67,5 @@ class HttpKernelServiceProvider implements ServiceProviderInterface, EventListen
         $dispatcher->addSubscriber(new MiddlewareListener($app));
         $dispatcher->addSubscriber(new ConverterListener($app['routes'], $app['callback_resolver']));
         $dispatcher->addSubscriber(new StringToResponseListener());
-
-        if (class_exists(HttpHeaderSerializer::class)) {
-            $dispatcher->addSubscriber(new AddLinkHeaderListener());
-        }
     }
 }

@@ -13,26 +13,26 @@ namespace Silex;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use Silex\Api\BootableProviderInterface;
+use Silex\Api\ControllerProviderInterface;
+use Silex\Api\EventListenerProviderInterface;
+use Silex\Provider\ExceptionHandlerServiceProvider;
+use Silex\Provider\HttpKernelServiceProvider;
+use Silex\Provider\RoutingServiceProvider;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\TerminableInterface;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
-use Symfony\Component\HttpKernel\Event\PostResponseEvent;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Silex\Api\BootableProviderInterface;
-use Silex\Api\EventListenerProviderInterface;
-use Silex\Api\ControllerProviderInterface;
-use Silex\Provider\ExceptionHandlerServiceProvider;
-use Silex\Provider\RoutingServiceProvider;
-use Silex\Provider\HttpKernelServiceProvider;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\Event\TerminateEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\HttpKernel\TerminableInterface;
 
 /**
  * The Silex framework class.
@@ -79,7 +79,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Registers a service provider.
      *
      * @param ServiceProviderInterface $provider A ServiceProviderInterface instance
-     * @param array                    $values   An array of values that customizes the provider
+     * @param array $values An array of values that customizes the provider
      *
      * @return Application
      */
@@ -123,7 +123,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * You can optionally specify HTTP methods that should be matched.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -136,7 +136,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Maps a GET request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -149,7 +149,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Maps a POST request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -162,7 +162,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Maps a PUT request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -175,7 +175,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Maps a DELETE request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -188,7 +188,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Maps an OPTIONS request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -201,7 +201,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Maps a PATCH request to a callable.
      *
      * @param string $pattern Matched route pattern
-     * @param mixed  $to      Callback that returns the response when matched
+     * @param mixed $to Callback that returns the response when matched
      *
      * @return Controller
      */
@@ -213,9 +213,9 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Adds an event listener that listens on the specified events.
      *
-     * @param string   $eventName The event to listen on
-     * @param callable $callback  The listener
-     * @param int      $priority  The higher this value, the earlier an event
+     * @param string $eventName The event to listen on
+     * @param callable $callback The listener
+     * @param int $priority The higher this value, the earlier an event
      *                            listener will be triggered in the chain (defaults to 0)
      */
     public function on($eventName, $callback, $priority = 0)
@@ -239,15 +239,15 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Before filters are run before any route has been matched.
      *
      * @param mixed $callback Before filter callback
-     * @param int   $priority The higher this value, the earlier an event
+     * @param int $priority The higher this value, the earlier an event
      *                        listener will be triggered in the chain (defaults to 0)
      */
     public function before($callback, $priority = 0)
     {
         $app = $this;
 
-        $this->on(KernelEvents::REQUEST, function (GetResponseEvent $event) use ($callback, $app) {
-            if (!$event->isMasterRequest()) {
+        $this->on(KernelEvents::REQUEST, function (RequestEvent $event) use ($callback, $app) {
+            if (!$event->isMainRequest()) {
                 return;
             }
 
@@ -265,15 +265,15 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * After filters are run after the controller has been executed.
      *
      * @param mixed $callback After filter callback
-     * @param int   $priority The higher this value, the earlier an event
+     * @param int $priority The higher this value, the earlier an event
      *                        listener will be triggered in the chain (defaults to 0)
      */
     public function after($callback, $priority = 0)
     {
         $app = $this;
 
-        $this->on(KernelEvents::RESPONSE, function (FilterResponseEvent $event) use ($callback, $app) {
-            if (!$event->isMasterRequest()) {
+        $this->on(KernelEvents::RESPONSE, function (ResponseEvent $event) use ($callback, $app) {
+            if (!$event->isMainRequest()) {
                 return;
             }
 
@@ -292,14 +292,14 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Finish filters are run after the response has been sent.
      *
      * @param mixed $callback Finish filter callback
-     * @param int   $priority The higher this value, the earlier an event
+     * @param int $priority The higher this value, the earlier an event
      *                        listener will be triggered in the chain (defaults to 0)
      */
     public function finish($callback, $priority = 0)
     {
         $app = $this;
 
-        $this->on(KernelEvents::TERMINATE, function (PostResponseEvent $event) use ($callback, $app) {
+        $this->on(KernelEvents::TERMINATE, function (TerminateEvent $event) use ($callback, $app) {
             call_user_func($app['callback_resolver']->resolveCallback($callback), $event->getRequest(), $event->getResponse(), $app);
         }, $priority);
     }
@@ -307,9 +307,9 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Aborts the current request by sending a proper HTTP error.
      *
-     * @param int    $statusCode The HTTP status code
-     * @param string $message    The status message
-     * @param array  $headers    An array of HTTP headers
+     * @param int $statusCode The HTTP status code
+     * @param string $message The status message
+     * @param array $headers An array of HTTP headers
      */
     public function abort($statusCode, $message = '', array $headers = [])
     {
@@ -330,7 +330,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * For this reason you should add logging handlers before output handlers.
      *
      * @param mixed $callback Error handler callback, takes an Exception argument
-     * @param int   $priority The higher this value, the earlier an event
+     * @param int $priority The higher this value, the earlier an event
      *                        listener will be triggered in the chain (defaults to -8)
      */
     public function error($callback, $priority = -8)
@@ -347,7 +347,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * called, until one returns a Response object.
      *
      * @param mixed $callback View handler callback
-     * @param int   $priority The higher this value, the earlier an event
+     * @param int $priority The higher this value, the earlier an event
      *                        listener will be triggered in the chain (defaults to 0)
      */
     public function view($callback, $priority = 0)
@@ -366,8 +366,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Redirects the user to another URL.
      *
-     * @param string $url    The URL to redirect to
-     * @param int    $status The status code (302 by default)
+     * @param string $url The URL to redirect to
+     * @param int $status The status code (302 by default)
      *
      * @return RedirectResponse
      */
@@ -380,8 +380,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Creates a streaming response.
      *
      * @param mixed $callback A valid PHP callback
-     * @param int   $status   The response status code
-     * @param array $headers  An array of response headers
+     * @param int $status The response status code
+     * @param array $headers An array of response headers
      *
      * @return StreamedResponse
      */
@@ -393,10 +393,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Escapes a text for HTML.
      *
-     * @param string $text         The input text to be escaped
-     * @param int    $flags        The flags (@see htmlspecialchars)
-     * @param string $charset      The charset
-     * @param bool   $doubleEncode Whether to try to avoid double escaping or not
+     * @param string $text The input text to be escaped
+     * @param int $flags The flags (@see htmlspecialchars)
+     * @param string $charset The charset
+     * @param bool $doubleEncode Whether to try to avoid double escaping or not
      *
      * @return string Escaped text
      */
@@ -408,8 +408,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Convert some data into a JSON response.
      *
-     * @param mixed $data    The response data
-     * @param int   $status  The response status code
+     * @param mixed $data The response data
+     * @param int $status The response status code
      * @param array $headers An array of response headers
      *
      * @return JsonResponse
@@ -422,10 +422,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Sends a file.
      *
-     * @param \SplFileInfo|string $file               The file to stream
-     * @param int                 $status             The response status code
-     * @param array               $headers            An array of response headers
-     * @param null|string         $contentDisposition The type of Content-Disposition to set automatically with the filename
+     * @param \SplFileInfo|string $file The file to stream
+     * @param int $status The response status code
+     * @param array $headers An array of response headers
+     * @param null|string $contentDisposition The type of Content-Disposition to set automatically with the filename
      *
      * @return BinaryFileResponse
      */
@@ -437,7 +437,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Mounts controllers under the given route prefix.
      *
-     * @param string                                                    $prefix      The route prefix
+     * @param string $prefix The route prefix
      * @param ControllerCollection|callable|ControllerProviderInterface $controllers A ControllerCollection, a callable, or a ControllerProviderInterface instance
      *
      * @return Application
@@ -485,7 +485,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * If you call this method directly instead of run(), you must call the
      * terminate() method yourself if you want the finish filters to be run.
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, $type = HttpKernelInterface::MAIN_REQUEST, $catch = true): Response
     {
         if (!$this->booted) {
             $this->boot();
@@ -499,7 +499,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * {@inheritdoc}
      */
-    public function terminate(Request $request, Response $response)
+    public function terminate(Request $request, Response $response): void
     {
         $this['kernel']->terminate($request, $response);
     }

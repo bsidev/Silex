@@ -36,8 +36,10 @@ class ControllerCollectionTest extends TestCase
     public function testGetRouteCollectionWithRoutes()
     {
         $controllers = new ControllerCollection(new Route());
-        $controllers->match('/foo', function () {});
-        $controllers->match('/bar', function () {});
+        $controllers->match('/foo', function () {
+        });
+        $controllers->match('/bar', function () {
+        });
 
         $routes = $controllers->flush();
         $this->assertCount(2, $routes->all());
@@ -47,8 +49,10 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
 
-        $fooController = $controllers->match('/foo', function () {})->bind('foo');
-        $barController = $controllers->match('/bar', function () {})->bind('bar');
+        $fooController = $controllers->match('/foo', function () {
+        })->bind('foo');
+        $barController = $controllers->match('/bar', function () {
+        })->bind('bar');
 
         $controllers->flush();
 
@@ -73,7 +77,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
 
-        $mountedRootController = $controllers->match('/', function () {});
+        $mountedRootController = $controllers->match('/', function () {
+        });
 
         $mainRootController = new Controller(new Route('/'));
         $mainRootController->bind($mainRootController->generateRouteName('main_1'));
@@ -87,9 +92,12 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
 
-        $controllers->match('/a-a', function () {});
-        $controllers->match('/a_a', function () {});
-        $controllers->match('/a/a', function () {});
+        $controllers->match('/a-a', function () {
+        });
+        $controllers->match('/a_a', function () {
+        });
+        $controllers->match('/a/a', function () {
+        });
 
         $routes = $controllers->flush();
 
@@ -104,8 +112,10 @@ class ControllerCollectionTest extends TestCase
         $controllers->mount('/root-a', $rootA = new ControllerCollection(new Route()));
         $controllers->mount('/root_a', $rootB = new ControllerCollection(new Route()));
 
-        $rootA->match('/leaf', function () {});
-        $rootB->match('/leaf', function () {});
+        $rootA->match('/leaf', function () {
+        });
+        $rootB->match('/leaf', function () {
+        });
 
         $routes = $controllers->flush();
 
@@ -123,8 +133,10 @@ class ControllerCollectionTest extends TestCase
         $rootA->mount('/tree', $treeA = new ControllerCollection(new Route()));
         $rootB->mount('/tree', $treeB = new ControllerCollection(new Route()));
 
-        $treeA->match('/leaf', function () {});
-        $treeB->match('/leaf', function () {});
+        $treeA->match('/leaf', function () {
+        });
+        $treeB->match('/leaf', function () {
+        });
 
         $routes = $controllers->flush();
 
@@ -173,12 +185,10 @@ class ControllerCollectionTest extends TestCase
         });
     }
 
-    /**
-     * @expectedException \LogicException
-     * @expectedExceptionMessage The "mount" method takes either a "ControllerCollection" instance or callable.
-     */
     public function testMountCallableException()
     {
+        $this->expectExceptionMessage("The \"mount\" method takes either a \"ControllerCollection\" instance or callable.");
+        $this->expectException(\LogicException::class);
         $controllers = new ControllerCollection(new Route());
         $controllers->mount('/prefix', '');
     }
@@ -187,7 +197,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
         $controllers->assert('id', '\d+');
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->assert('name', '\w+')->assert('extra', '.*');
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->assert('name', '\w+')->assert('extra', '.*');
         $controllers->assert('extra', '\w+');
 
         $this->assertEquals('\d+', $controller->getRoute()->getRequirement('id'));
@@ -203,7 +214,8 @@ class ControllerCollectionTest extends TestCase
             $mounted->assert('name', '\w+');
             $mounted->mount('/{id}', function ($mounted2) use (&$controller) {
                 $mounted2->assert('id', '\d+');
-                $controller = $mounted2->match('/{extra}', function () {})->assert('extra', '\w+');
+                $controller = $mounted2->match('/{extra}', function () {
+                })->assert('extra', '\w+');
             });
         });
 
@@ -216,7 +228,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
         $controllers->value('id', '1');
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->value('name', 'Fabien')->value('extra', 'Symfony');
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->value('name', 'Fabien')->value('extra', 'Symfony');
         $controllers->value('extra', 'Twig');
 
         $this->assertEquals('1', $controller->getRoute()->getDefault('id'));
@@ -228,7 +241,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
         $controllers->convert('id', '1');
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->convert('name', 'Fabien')->convert('extra', 'Symfony');
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->convert('name', 'Fabien')->convert('extra', 'Symfony');
         $controllers->convert('extra', 'Twig');
 
         $this->assertEquals(['id' => '1', 'name' => 'Fabien', 'extra' => 'Twig'], $controller->getRoute()->getOption('_converters'));
@@ -238,7 +252,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
         $controllers->requireHttp();
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->requireHttps();
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->requireHttps();
 
         $this->assertEquals(['https'], $controller->getRoute()->getSchemes());
 
@@ -251,7 +266,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
         $controllers->before('mid1');
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->before('mid2');
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->before('mid2');
         $controllers->before('mid3');
 
         $this->assertEquals(['mid1', 'mid2', 'mid3'], $controller->getRoute()->getOption('_before_middlewares'));
@@ -261,7 +277,8 @@ class ControllerCollectionTest extends TestCase
     {
         $controllers = new ControllerCollection(new Route());
         $controllers->after('mid1');
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->after('mid2');
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->after('mid2');
         $controllers->after('mid3');
 
         $this->assertEquals(['mid1', 'mid2', 'mid3'], $controller->getRoute()->getOption('_after_middlewares'));
@@ -270,7 +287,8 @@ class ControllerCollectionTest extends TestCase
     public function testWhen()
     {
         $controllers = new ControllerCollection(new Route());
-        $controller = $controllers->match('/{id}/{name}/{extra}', function () {})->when('request.isSecure() == true');
+        $controller = $controllers->match('/{id}/{name}/{extra}', function () {
+        })->when('request.isSecure() == true');
 
         $this->assertEquals('request.isSecure() == true', $controller->getRoute()->getCondition());
     }
@@ -285,11 +303,9 @@ class ControllerCollectionTest extends TestCase
         $this->assertEquals('foo', $route->foo);
     }
 
-    /**
-     * @expectedException \BadMethodCallException
-     */
     public function testRouteMethodDoesNotExist()
     {
+        $this->expectException(\BadMethodCallException::class);
         $route = new MyRoute1();
 
         $controller = new ControllerCollection($route);
@@ -301,11 +317,14 @@ class ControllerCollectionTest extends TestCase
         $cl1 = new ControllerCollection(new MyRoute1());
         $cl2 = new ControllerCollection(new MyRoute1());
 
-        $c1 = $cl2->match('/c1', function () {});
+        $c1 = $cl2->match('/c1', function () {
+        });
         $cl1->mount('/foo', $cl2);
-        $c2 = $cl2->match('/c2', function () {});
+        $c2 = $cl2->match('/c2', function () {
+        });
         $cl1->before('before');
-        $c3 = $cl2->match('/c3', function () {});
+        $c3 = $cl2->match('/c3', function () {
+        });
 
         $cl1->flush();
 
